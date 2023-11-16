@@ -1,7 +1,7 @@
 import pytest
 import os
 import shutil
-from automation.main import create_dir, delete_dir, delete_user, restore_user, sort_dir, unsort_dir
+from automation.main import create_dir, delete_dir, delete_user, restore_user, sort_dir, unsort_dir, find_log_files
 
 
 # @pytest.mark.skip("TODO")
@@ -95,3 +95,18 @@ def test_unsort_user():
         assert True
     else:
         assert False
+
+
+# @pytest.mark.skip("TODO")
+def test_find_parse_user_logs():
+    str_cwd = os.getcwd()
+    str_dir_curr = os.path.join(str_cwd, "user-docs/userTest")
+    create_dir("userTest")
+    create_dir("userTest/log")
+    shutil.copy(os.path.join(str_cwd,"tests","test.log"),os.path.join(str_dir_curr, "log"))
+    find_log_files("userTest")
+    bool_errors = os.path.exists(os.path.join(str_dir_curr, "log", "test_errors.log"))
+    bool_warnings = os.path.exists(os.path.join(str_dir_curr, "log", "test_warnings.log"))
+    shutil.rmtree(str_dir_curr)
+    assert bool_errors and bool_warnings
+
