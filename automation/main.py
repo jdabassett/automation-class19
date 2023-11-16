@@ -31,7 +31,7 @@ def delete_dir(str_directory: str):
     """"""
     try:
         str_cwd = os.getcwd()
-        str_dir_path = os.path.join(str_cwd, str(str_directory))
+        str_dir_path = os.path.join(str_cwd, "user-docs", str(str_directory))
         if os.path.exists(str_dir_path):
             shutil.rmtree(str_dir_path)
         else:
@@ -44,11 +44,11 @@ def delete_user(str_directory: str):
     """"""
     str_cwd = os.getcwd()
     str_dir_curr = os.path.join(str_cwd, "user-docs", str(str_directory))
-    str_dir_dest = os.path.join(str_cwd, "temp-user-docs", str(str_directory))
+    str_dir_dest = os.path.join(str_cwd, "temp-user-docs")
     if os.path.exists(str_dir_curr):
-        shutil.copytree(str_dir_curr, str_dir_dest)
-        if os.path.exists(str_dir_dest):
-            delete_dir("user-docs/"+str_directory)
+        if os.path.exists(os.path.join(str_dir_dest, str_directory)):
+            delete_dir(os.path.join(str_dir_dest, str_directory))
+        shutil.move(str_dir_curr, str_dir_dest)
     else:
         console.print(f"Error, user not found.", style='bad')
 
@@ -57,11 +57,12 @@ def restore_user(str_directory: str):
     """"""
     str_cwd = os.getcwd()
     str_dir_curr = os.path.join(str_cwd, "temp-user-docs", str(str_directory))
-    str_dir_dest = os.path.join(str_cwd, "user-docs", str(str_directory))
+    str_dir_dest = os.path.join(str_cwd, "user-docs")
     if os.path.exists(str_dir_curr):
-        shutil.copytree(str_dir_curr, str_dir_dest)
-        if os.path.exists(str_dir_dest):
-            delete_dir("temp-user-docs/"+str_directory)
+        if os.path.exists(os.path.join(str_dir_dest, str_directory)):
+            console.print(f"Error, cannot restore deleted user, current user already exists with same name.", style='bad')
+        else:
+            shutil.move(str_dir_curr, str_dir_dest)
     else:
         console.print(f"Error, cannot restore deleted user.", style='bad')
 
