@@ -1,27 +1,31 @@
 import pytest
 import os
-from automation.main import create_dir, delete_dir, delete_user, restore_user
+import shutil
+from automation.main import create_dir, delete_dir, delete_user, restore_user, sort_dir, unsort_dir
+
 
 # @pytest.mark.skip("TODO")
 def test_functions_exist():
-    assert (create_dir and delete_dir and delete_user and restore_user)
+    assert (create_dir and delete_dir and delete_user and restore_user and sort_dir and unsort_dir)
 
 
 # @pytest.mark.skip("TODO")
 def test_create_and_delete_dir_functions():
+    str_cwd = os.getcwd()
     str_dir = "delete_dir_for_testing"
     create_dir("delete_dir_for_testing")
-    list_contents = os.listdir(".")
+    list_contents = os.listdir(os.path.join(str_cwd, 'user-docs'))
     bool_exists = False
     if str_dir in list_contents:
         bool_exists = True
-    delete_dir(str_dir)
+    delete_dir(os.path.join("user-docs", str_dir))
     assert bool_exists
+
 
 # @pytest.mark.skip("TODO")
 def test_delete_user():
     str_cwd = os.getcwd()
-    create_dir("user-docs/userTest")
+    create_dir("userTest")
     delete_dir("temp-user-docs/userTest")
     delete_user("userTest")
     list_root = os.listdir(str_cwd)
@@ -37,7 +41,7 @@ def test_delete_user():
 # @pytest.mark.skip("TODO")
 def test_restore_user():
     str_cwd = os.getcwd()
-    create_dir("temp-user-docs/userTest")
+    os.makedirs(os.path.join("temp-user-docs/userTest"))
     delete_dir("user-docs/userTest")
     restore_user("userTest")
     list_root = os.listdir(str_cwd)
@@ -50,6 +54,44 @@ def test_restore_user():
         assert True
 
 
+# @pytest.mark.skip("TODO")
+def test_sort_user():
+    str_cwd = os.getcwd()
+    str_dir_curr = os.path.join(str_cwd, "user-docs/userTest")
+    create_dir("userTest")
+    with open(os.path.join(str_dir_curr, "file.txt"), "w") as file:
+        file.write("")
+    with open(os.path.join(str_dir_curr, "file.log"), "w") as file:
+        file.write("")
+    with open(os.path.join(str_dir_curr, "file.mail"), "w") as file:
+        file.write("")
+    sort_dir("userTest")
+    list_curr = os.listdir(str_dir_curr)
+    shutil.rmtree(str_dir_curr)
+    if "txt" in list_curr and "mail" in list_curr and "log" in list_curr and len(list_curr) == 3:
+        assert True
+    else:
+        assert False
 
 
-
+# @pytest.mark.skip("TODO")
+def test_unsort_user():
+    str_cwd = os.getcwd()
+    str_dir_curr = os.path.join(str_cwd, "user-docs/userTest")
+    create_dir("userTest")
+    create_dir("userTest/txt")
+    create_dir("userTest/log")
+    create_dir("userTest/mail")
+    with open(os.path.join(str_dir_curr, "txt", "file.txt"), "w") as file:
+        file.write("")
+    with open(os.path.join(str_dir_curr, "log", "file.log"), "w") as file:
+        file.write("")
+    with open(os.path.join(str_dir_curr, "mail", "file.mail"), "w") as file:
+        file.write("")
+    unsort_dir("userTest")
+    list_curr = os.listdir(str_dir_curr)
+    shutil.rmtree(str_dir_curr)
+    if "file.txt" in list_curr and "file.log" in list_curr and "file.mail" in list_curr and len(list_curr) == 3:
+        assert True
+    else:
+        assert False
