@@ -17,15 +17,23 @@ console = Console(theme=automation_theme)
 
 dict_prompts = {
     "global": {
-        "prompts": ['\nThere are several actions that you could make.','0: Exit Application.', '1: Choose a user records to move into.', '2: Restore user records.','Select action by number only'],
-        "inputs": ['0', '1', '2'],
-        "default": "0",
+        "prompts": ['\nThere are several actions that you could make.','0: Exit Application.', '1: Choose a user records to move into.', '2: Delete user records.', '3: Restore user records.','Select action by number only'],
+        "inputs": ['0', '1', '2', '3'],
+        "default": "1",
     },
     "user": {
-        "prompts": ['\nThere are several actions that you could make.','0: Exit application.', '1: Choose a user records to move into.', '2: Create a folder in user records.', '3: Delete a folder in user records.', '4: Sort user files into folders by extensions.', '5: Unsort user files out of folders.', '6: Delete current user records.', '7: Parse user logs into user error and warning logs.', 'Select action by number only'],
-        "inputs": ['0', '1', '2', '3', '4', '5', '6', '7'],
+        "prompts": ['\nThere are several actions that you could make.','0: Exit application.', '1: Choose a user records to move into.', '2: Create a folder in user records.', '3: Delete a folder in user records.', '4: Sort user files into folders by extensions.', '5: Unsort user files out of folders.', '6: Parse user logs into user error and warning logs.', 'Select action by number only'],
+        "inputs": ['0', '1', '2', '3', '4', '5', '6'],
         "default": "0",
-    }
+    },
+    "restore": {
+        "prompts": ['\nThese are the deleted user records we have on standby. Which would you like to restore?', 'Select action by number only'],
+        "default": "0",
+    },
+    "users": {
+        "prompts": ["\nWhat directory do you want select?",'Select action by number only'],
+        "default": "0",
+    },
 }
 
 
@@ -51,11 +59,11 @@ def delete_dir(str_directory: str):
         str_dir_path = os.path.join(str_cwd, "user-docs", str(str_directory))
         if os.path.exists(str_dir_path):
             shutil.rmtree(str_dir_path)
-            console.print(f"Directory '{str_directory}' was deleted.", style="good")
+            console.print(f"\nDirectory '{str_directory}' was deleted.", style="good")
         else:
-            console.print(f"Target directory '{str_directory}' doesn't exists.", style="bad")
+            console.print(f"\nTarget directory '{str_directory}' doesn't exists.", style="bad")
     except OSError as e:
-        console.print(f"Error, deleting directory '{str_directory}': {e}", style='bad')
+        console.print(f"\nError, deleting directory '{str_directory}': {e}", style='bad')
 
 
 def delete_user(str_directory: str):
@@ -67,9 +75,9 @@ def delete_user(str_directory: str):
         if os.path.exists(os.path.join(str_dir_dest, str_directory)):
             delete_dir(os.path.join(str_dir_dest, str_directory))
         shutil.move(str_dir_curr, str_dir_dest)
-        console.print(f"User '{str_directory}' was deleted.", style="good")
+        console.print(f"\nUser '{str_directory}' was deleted.", style="good")
     else:
-        console.print(f"Error, user not found.", style='bad')
+        console.print(f"\nError, user not found.", style='bad')
 
 
 def restore_user(str_directory: str):
@@ -79,12 +87,12 @@ def restore_user(str_directory: str):
     str_dir_dest = os.path.join(str_cwd, "user-docs")
     if os.path.exists(str_dir_curr):
         if os.path.exists(os.path.join(str_dir_dest, str_directory)):
-            console.print(f"Error, cannot restore {str_directory}, current user already exists with same name.", style='yellow')
+            console.print(f"\nError, cannot restore {str_directory}, current user already exists with same name.", style='yellow')
         else:
             shutil.move(str_dir_curr, str_dir_dest)
-            console.print(f"Directory '{str_directory}' was restored.", style="good")
+            console.print(f"\nDirectory '{str_directory}' was restored.", style="good")
     else:
-        console.print(f"Error, cannot restore deleted user.", style='bad')
+        console.print(f"\nError, cannot restore deleted user.", style='bad')
 
 
 def sort_dir(str_directory: str):
@@ -105,9 +113,9 @@ def sort_dir(str_directory: str):
             str_item_dest = os.path.join(str_dir_curr, str_ext, item)
             if not os.path.exists(str_item_dest):
                 shutil.move(str_item_curr, str_item_dest)
-        console.print(f"Directory '{str_directory}' was properly sorted.", style="good")
+        console.print(f"\nDirectory '{str_directory}' was properly sorted.", style="good")
     else:
-        console.print(f"Error, cannot find directory '{str_dir_curr}'", style="bad")
+        console.print(f"\nError, cannot find directory '{str_dir_curr}'", style="bad")
 
 
 def unsort_dir(str_directory: str):
@@ -126,9 +134,9 @@ def unsort_dir(str_directory: str):
                         shutil.copytree(str_item_nest, str_dir_curr)
                         shutil.rmtree(str_item_nest)
                 shutil.rmtree(str_item_curr)
-        console.print(f"Directory '{str_directory}' was properly unsorted.", style="good")
+        console.print(f"\nDirectory '{str_directory}' was properly unsorted.", style="good")
     else:
-        console.print(f"Error, cannot find directory '{str_dir_curr}'", style="bad")
+        console.print(f"\nError, cannot find directory '{str_dir_curr}'", style="bad")
 
 
 def parse_log_file(str_directory):
@@ -170,19 +178,10 @@ def find_log_files(str_directory: str):
         # if there are any log files in this directory, all parse function on this directory
         if any([True if bool(re.search(f"\.log$",item)) else False for item in list_curr]):
             parse_log_file(str_dir_curr)
-        console.print(f"Directory '{str_directory}' log files were properly parsed and new ERROR and WARNING files created.",
+        console.print(f"\nDirectory '{str_directory}' log files were properly parsed and new ERROR and WARNING files created.",
                       style="good")
     else:
-        console.print(f"Error, cannot find directory '{str_dir_curr}'", style="bad")
-
-
-def choose_user() -> str:
-    """"""
-    list_users = ["global", *sorted(os.listdir(os.path.join(os.getcwd(), "user-docs")))]
-    console.print(f"These are the usernames we have on record. {list_users}", style='good')
-    str_user = Prompt.ask("[white]Please choose a username (ie: user1)[/]",
-                          choices=list_users, default="global", show_choices=False, show_default=False)
-    return str_user
+        console.print(f"\nError, cannot find directory '{str_dir_curr}'", style="bad")
 
 
 def prompt_user(list_options, list_inputs, str_default) -> str:
@@ -191,9 +190,37 @@ def prompt_user(list_options, list_inputs, str_default) -> str:
     return str_command
 
 
-def display_table(str_directory: str = ""):
+def choose_user(str_type: str = "") -> str:
+    """"""
     str_cwd = os.getcwd()
-    str_dir_curr = os.path.join(str_cwd, "user-docs", str_directory)
+    if str_type == "delete":
+        list_users = ["cancel", *sorted(os.listdir(os.path.join(str_cwd, "user-docs")))]
+    else:
+        list_users = ["global", *sorted(os.listdir(os.path.join(str_cwd, "user-docs")))]
+    list_users_display = [f"{index}: {item}" for index, item in enumerate(list_users)]
+    list_users_input = [f"{index}" for index, item in enumerate(list_users)]
+    dict_users = dict_prompts['users']
+    list_prompts = [dict_users['prompts'][0], *list_users_display, dict_users['prompts'][-1]]
+    str_number = prompt_user(list_prompts, list_users_input, dict_users['default'])
+    return list_users[int(str_number)]
+
+
+def prompt_restore_user() -> str:
+    """"""
+    str_cwd = os.getcwd()
+    list_temp = ["cancel", *sorted(os.listdir(os.path.join(str_cwd, "temp-user-docs")))]
+    list_temp_display = [f"{index}: {item}" for index, item in enumerate(list_temp)]
+    list_temp_input = [f"{index}" for index, item in enumerate(list_temp)]
+    dict_restore = dict_prompts['restore']
+    list_prompts = [dict_restore['prompts'][0], *list_temp_display, dict_restore['prompts'][-1]]
+    str_number = prompt_user(list_prompts, list_temp_input, dict_restore["default"])
+    return list_temp[int(str_number)]
+
+
+def display_table(str_user_or_temp: str = "user-docs", str_directory: str = ""):
+    """"""
+    str_cwd = os.getcwd()
+    str_dir_curr = os.path.join(str_cwd, str_user_or_temp, str_directory)
     list_curr = sorted(os.listdir(str_dir_curr))
     table = Table(show_header=True, header_style="bold green")
     table.add_column("Type", style="green", width=20)
@@ -217,16 +244,85 @@ def main():
             dict_user = dict_prompts['global']
             str_command = prompt_user(dict_user['prompts'], dict_user['inputs'], dict_user['default'])
         else:
-            display_table(str_user)
+            display_table("user-docs", str_user)
             dict_user = dict_prompts['user']
             str_command = prompt_user(dict_user['prompts'], dict_user['inputs'], dict_user['default'])
 
-        # quiting application
+        # if exiting
         if str_command == "0":
             console.print("\nLeaving UMAMI!", style="good")
-            break
+            str_command = 'break'
+
+        # moving from user to user
         elif str_command == "1":
             str_user = choose_user()
+
+        # delete user records
+        elif str_command == "2" and str_user == "global":
+            str_delete_user = choose_user("delete")
+            if str_delete_user == "cancel":
+                str_delete_user =""
+                continue
+            else:
+                str_confirmation = prompt_user([f"\nAre you sure that you want to delete {str_delete_user}.", "0: No", "1: Yes", "Select action by number only"],["0", "1"], "0")
+                if str_confirmation == "1":
+                    delete_user(str_delete_user)
+
+        # restoring user records
+        elif str_command == "3" and str_user == "global":
+            console.print(f"\nCurrently in the disabled user directory.", style="good")
+            display_table("temp-user-docs", "")
+            str_restore_user = prompt_restore_user()
+            if str_restore_user == "cancel":
+                str_restore_user = ""
+                continue
+            else:
+                restore_user(str_restore_user)
+
+        # allow user to create folder
+        elif str_command == "2" and str_user != "global":
+            print("\n")
+            str_create_folder = Prompt.ask(r'What is the folder name? (illegal characters: \ / : * ? " < > |)')
+            if bool(re.search(r'[^/\\:*?"<>|]', str_create_folder)):
+                create_dir(f"{str_user}/{str_create_folder}")
+            else:
+                console.print(f"Sorry {str_create_folder} name not allows. Please try again.", style='bad')
+
+        # allow user to delete folder
+        elif str_command == "3" and str_user != "global":
+            str_cwd = os.getcwd()
+            list_curr = ["cancel", *sorted(os.listdir(os.path.join(str_cwd, "user-docs", str_user)))]
+            list_curr_display = [f"{index}: {item}" for index, item in enumerate(list_curr)]
+            list_curr_input = [f"{index}" for index, item in enumerate(list_curr)]
+            list_display = ["\nWhat folder would you like to delete?", *list_curr_display, "elect action by number only"]
+
+            str_delete_folder = prompt_user(list_display, list_curr_input, "0")
+
+            print("delete directory", str_delete_folder)
+
+            if str_delete_folder == "0":
+                str_delete_user = ""
+                continue
+            else:
+                delete_dir(f"{str_user}/{list_curr[int(str_delete_folder)]}")
+
+        # allow user to nest files into directories based on extension
+        elif str_command == "4" and str_user != "global":
+            sort_dir(str_user)
+
+        # allow user to unnest files into directories based on extension
+        elif str_command == "5" and str_user != "global":
+            unsort_dir(str_user)
+
+        # allow user to parse log files into error and warning log files
+        elif str_command == "6" and str_user != "global":
+            find_log_files(str_user)
+
+        # break out of application or continue
+        if str_command == "break":
+            break
+        else:
+            str_command = ""
 
 
 if __name__ == "__main__":
